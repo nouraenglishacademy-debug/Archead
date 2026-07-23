@@ -24,12 +24,12 @@
       
       <!-- Search Bar -->
       <div class="flex w-full gap-2">
-        <input id="searchInput" type="text" placeholder="ابحث عن أي شيء في الأرشيف..." 
+        <input id="searchInput" type="text" placeholder="ابحث عن أي شيء في أرشيف الإنترنت..." 
                class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm">
         
-        <button onclick="performSmartSearch()" 
+        <button onclick="performArchiveSearch()" 
                 class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition text-sm whitespace-nowrap shadow-lg shadow-indigo-600/30">
-          بحث آمن 🚀
+          بحث في الأرشيف 🔍
         </button>
       </div>
     </div>
@@ -38,10 +38,10 @@
   <!-- Main Content Area -->
   <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col items-center justify-center text-center">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-4">
-      <div class="text-5xl mb-2">🌐</div>
-      <h2 class="text-lg font-bold text-slate-200">بوابة الأرشيف الآمنة</h2>
+      <div class="text-5xl mb-2">🏛️</div>
+      <h2 class="text-lg font-bold text-slate-200">بوابة الأرشيف الرسمي</h2>
       <p class="text-xs text-slate-400 leading-relaxed">
-        تم تحديث نظام التوجيه ليتخطى أي حجب شبكي أو قيود تفرضها بعض شركات الاتصالات على الروابط المباشرة.
+        اكتب الكلمة أو الرابط واضغط بحث للانتقال مباشرة إلى نتائج الأرشيف الأساسية.
       </p>
     </div>
   </main>
@@ -53,22 +53,20 @@
 
   <!-- Main Logic -->
   <script>
-    function performSmartSearch() {
+    function performArchiveSearch() {
       const query = document.getElementById('searchInput').value.trim();
       if (!query) {
         alert('يرجى كتابة كلمة البحث أولاً.');
         return;
       }
 
-      // توجيه ذكي يفتح البحث مع استخدام بدائل آمنة في حال كان الموقع الأساسي محجوباً على الشبكة
-      const safeUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(query)}`;
-      
-      // فتح البحث في نفس التبويب
-      window.location.href = safeUrl;
+      // توجيه مباشر ومضمون لصفحة البحث في أرشيف الإنترنت الرسمي
+      const archiveUrl = `https://archive.org/search?query=${encodeURIComponent(query)}`;
+      window.location.href = archiveUrl;
     }
 
     document.getElementById('searchInput').addEventListener('keypress', (e) => { 
-      if (e.key === 'Enter') performSmartSearch(); 
+      if (e.key === 'Enter') performArchiveSearch(); 
     });
   </script>
 
