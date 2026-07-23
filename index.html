@@ -92,7 +92,7 @@
     function showDebugError(msg) {
       const box = document.getElementById('errorDebugBox');
       box.classList.remove('hidden');
-      box.innerHTML = `<strong>⚠️ خطأ تفصيلي في قلب البيانات:</strong> ${msg}`;
+      box.innerHTML = `<strong>⚠️ خطأ تفصيلي:</strong> ${msg}`;
     }
 
     function resetHome() {
@@ -173,13 +173,13 @@
       const resultsGrid = document.getElementById('resultsGrid');
 
       let mediaQuery = (mediaType !== 'all' && mediaType !== 'web') ? ` AND mediatype:${mediaType}` : '';
-      const targetUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
       
-      const apiUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+      // استخدام نقطة الاتصال المباشرة الرسومية للأرشيف بدون بروكسيات خارجية نهائياً
+      const apiUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
 
       try {
         const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error(`Proxy API HTTP error! status: ${response.status}`);
+        if (!response.ok) throw new Error(`Archive API HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         const docs = data.response ? data.response.docs : [];
