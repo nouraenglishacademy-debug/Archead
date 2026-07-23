@@ -93,8 +93,6 @@
 
   <!-- Main Logic -->
   <script>
-    const CORS_PROXY = "https://api.allorigins.win/raw?url=";
-
     function resetHome() {
       document.getElementById('searchInput').value = '';
       document.getElementById('resultsGrid').innerHTML = '';
@@ -130,8 +128,10 @@
       const cleanUrl = url.replace(/^(https?:\/\/)?(www\.)?/, '');
 
       try {
-        const targetUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(cleanUrl)}`;
-        const response = await fetch(CORS_PROXY + encodeURIComponent(targetUrl));
+        const apiUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(cleanUrl)}`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) throw new Error('Network error');
         const data = await response.json();
 
         if (data.archived_snapshots && data.archived_snapshots.closest) {
@@ -159,7 +159,7 @@
           await searchGeneralArchive(url, 'all');
         }
       } catch (err) {
-        statusDiv.innerHTML = '<span class="text-rose-400">حدث خطأ أثناء الاتصال بالأرشيف. يرجى المحاولة لاحقاً.</span>';
+        statusDiv.innerHTML = '<span class="text-rose-400">تعذر الاتصال بالسيرفر. تحقق من اتصال الإنترنت أو حاول مجدداً.</span>';
       }
     }
 
@@ -168,10 +168,12 @@
       const resultsGrid = document.getElementById('resultsGrid');
 
       let mediaQuery = (mediaType !== 'all' && mediaType !== 'web') ? ` AND mediatype:${mediaType}` : '';
-      const targetApiUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
+      const apiUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
 
       try {
-        const response = await fetch(CORS_PROXY + encodeURIComponent(targetApiUrl));
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('API request failed');
+
         const data = await response.json();
         const docs = data.response ? data.response.docs : [];
 
@@ -216,7 +218,7 @@
         });
 
       } catch (err) {
-        statusDiv.innerHTML = '<span class="text-rose-400">حدث خطأ أثناء جلب النتائج.</span>';
+        statusDiv.innerHTML = '<span class="text-rose-400">حدث خطأ أثناء جلب النتائج من الأرشيف.</span>';
       }
     }
 
