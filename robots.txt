@@ -1,0 +1,6 @@
+# Archead - Internet Archive Arabic Interface
+User-agent: *
+Allow: /
+
+# Sitemap Location (اختياري عند إضافة Sitemap مستقبلاً)
+# Sitemap: https://archead.vercel.app/sitemap.xml
