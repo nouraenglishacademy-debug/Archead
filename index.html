@@ -5,13 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Archead - أرشيف المعرفة العربي</title>
 
-  <!-- SEO & Social Media Meta Tags -->
-  <meta name="description" content="واجهة عربية حديثة وسريعة للبحث والاستكشاف في أرشيف الإنترنت الشامل.">
-  <meta property="og:title" content="Archead - أرشيف المعرفة العربي">
-  <meta property="og:description" content="تصفح وابحث في ملايين المواقع، الكتب، الفيديوهات، والصوتيات عبر واجهة عربية حديثة.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://archead.vercel.app/">
-
   <!-- Tailwind CSS & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -71,6 +64,9 @@
 
   <!-- Main Content Area -->
   <main class="max-w-6xl w-full mx-auto p-4 flex-grow">
+    <!-- صندوق إظهار الأخطاء التقنية على الشاشة مباشرة -->
+    <div id="errorDebugBox" class="hidden mb-4 p-4 bg-rose-950/80 border border-rose-600 rounded-xl text-rose-200 text-xs break-all"></div>
+
     <div id="status" class="text-center py-12 text-slate-400 text-sm">
       أدخل كلمة البحث أو رابط الموقع للبدء في الاستكشاف...
     </div>
@@ -93,15 +89,23 @@
 
   <!-- Main Logic -->
   <script>
+    function showDebugError(msg) {
+      const box = document.getElementById('errorDebugBox');
+      box.classList.remove('hidden');
+      box.innerHTML = `<strong>⚠️ خطأ تفصيلي:</strong> ${msg}`;
+    }
+
     function resetHome() {
       document.getElementById('searchInput').value = '';
       document.getElementById('resultsGrid').innerHTML = '';
       document.getElementById('status').innerHTML = 'أدخل كلمة البحث أو رابط الموقع للبدء في الاستكشاف...';
+      document.getElementById('errorDebugBox').classList.add('hidden');
       closeViewer();
     }
 
     async function performSearch() {
       closeViewer();
+      document.getElementById('errorDebugBox').classList.add('hidden');
       const query = document.getElementById('searchInput').value.trim();
       const mediaType = document.getElementById('mediaType').value;
       const statusDiv = document.getElementById('status');
@@ -131,7 +135,7 @@
         const apiUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(cleanUrl)}`;
         const response = await fetch(apiUrl);
         
-        if (!response.ok) throw new Error('Network error');
+        if (!response.ok) throw new Error(`Wayback HTTP error! status: ${response.status}`);
         const data = await response.json();
 
         if (data.archived_snapshots && data.archived_snapshots.closest) {
@@ -159,7 +163,8 @@
           await searchGeneralArchive(url, 'all');
         }
       } catch (err) {
-        statusDiv.innerHTML = '<span class="text-rose-400">تعذر الاتصال بالسيرفر. تحقق من اتصال الإنترنت أو حاول مجدداً.</span>';
+        statusDiv.innerHTML = '<span class="text-rose-400">تعذر الاتصال بالسيرفر.</span>';
+        showDebugError(err.message);
       }
     }
 
@@ -168,13 +173,18 @@
       const resultsGrid = document.getElementById('resultsGrid');
 
       let mediaQuery = (mediaType !== 'all' && mediaType !== 'web') ? ` AND mediatype:${mediaType}` : '';
-      const apiUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
+      const targetUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
+      
+      const apiUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
 
       try {
         const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error('API request failed');
+        if (!response.ok) throw new Error(`Proxy API HTTP error! status: ${response.status}`);
 
-        const data = await response.json();
+        const wrappedData = await response.json();
+        if (!wrappedData.contents) throw new Error('Empty contents returned from proxy');
+        
+        const data = JSON.parse(wrappedData.contents);
         const docs = data.response ? data.response.docs : [];
 
         if (!docs || docs.length === 0) {
@@ -219,6 +229,7 @@
 
       } catch (err) {
         statusDiv.innerHTML = '<span class="text-rose-400">حدث خطأ أثناء جلب النتائج من الأرشيف.</span>';
+        showDebugError(err.message);
       }
     }
 
