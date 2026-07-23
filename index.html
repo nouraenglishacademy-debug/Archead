@@ -15,60 +15,246 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between">
 
   <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40 p-4">
-    <div class="max-w-4xl mx-auto flex flex-col items-center gap-4">
-      <div class="flex items-center gap-2 cursor-pointer">
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 p-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="resetHome()">
         <span class="text-2xl">🏛️</span>
         <h1 class="text-xl font-bold text-indigo-400">Archead</h1>
       </div>
       
       <!-- Search Bar -->
-      <div class="flex w-full gap-2">
-        <input id="searchInput" type="text" placeholder="ابحث عن أي شيء في أرشيف الإنترنت..." 
-               class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-sm">
+      <div class="flex w-full md:w-2/3 gap-2">
+        <select id="mediaType" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs md:text-sm rounded-xl px-3 focus:outline-none focus:border-indigo-500">
+          <option value="all">كل التصنيفات</option>
+          <option value="web">مواقع ويب</option>
+          <option value="texts">كتب ومقالات</option>
+          <option value="movies">فيديوهات</option>
+          <option value="audio">صوتيات</option>
+          <option value="image">صور ورسومات</option>
+          <option value="software">برمجيات وألعاب</option>
+        </select>
+
+        <input id="searchInput" type="text" placeholder="ابحث عن موقع، كتاب، فيديو، أو ملف..." 
+               class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 focus:outline-none focus:border-indigo-500 transition text-xs md:text-sm">
         
-        <button onclick="performArchiveSearch()" 
-                class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold transition text-sm whitespace-nowrap shadow-lg shadow-indigo-600/30">
-          بحث في الأرشيف 🔍
+        <button onclick="performSearch()" 
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold transition text-xs md:text-sm whitespace-nowrap">
+          بحث
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content Area -->
-  <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col items-center justify-center text-center">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-4">
-      <div class="text-5xl mb-2">🏛️</div>
-      <h2 class="text-lg font-bold text-slate-200">بوابة الأرشيف الرسمي</h2>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        اكتب الكلمة أو الرابط واضغط بحث للانتقال مباشرة إلى نتائج الأرشيف الأساسية.
-      </p>
+  <!-- Embedded Viewer Modal -->
+  <div id="viewerContainer" class="hidden fixed inset-0 bg-slate-950/95 z-50 flex flex-col p-4">
+    <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-3 max-w-6xl w-full mx-auto">
+      <h2 id="viewerTitle" class="text-sm font-bold text-indigo-400 truncate max-w-md">معاينة المحتوى</h2>
+      <div class="flex gap-2">
+        <a id="externalLink" href="#" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1">
+          <span>فتح في تبويب جديد</span> ↗
+        </a>
+        <button onclick="closeViewer()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition">إغلاق المعاينة ✕</button>
+      </div>
     </div>
+    
+    <div class="flex-grow max-w-6xl w-full mx-auto h-full bg-slate-900 rounded-xl overflow-hidden border border-slate-800 relative">
+      <iframe id="contentFrame" class="w-full h-full border-0 bg-white" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="max-w-6xl w-full mx-auto p-4 flex-grow">
+    <div id="status" class="text-center py-12 text-slate-400 text-sm">
+      أدخل كلمة البحث أو رابط الموقع للبدء في الاستكشاف...
+    </div>
+    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800 bg-slate-900/50 py-6 text-center text-xs text-slate-500">
-    <p>© 2026 Archead. جميع الحقوق محفوظة.</p>
+  <footer class="border-t border-slate-800 bg-slate-900/50 mt-12 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div>
+        <p>© 2026 Archead. جميع الحقوق محفوظة.</p>
+        <p class="text-slate-600 text-[10px] mt-1">يعتمد على APIs الرسمية لـ Internet Archive</p>
+      </div>
+      <div class="flex gap-4 text-slate-400">
+        <button onclick="resetHome()" class="hover:text-indigo-400 transition">الرئيسية</button>
+        <a href="https://archive.org" target="_blank" rel="noopener" class="hover:text-indigo-400 transition">المصدر ↗</a>
+      </div>
+    </div>
   </footer>
 
   <!-- Main Logic -->
   <script>
-    function performArchiveSearch() {
+    function resetHome() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('resultsGrid').innerHTML = '';
+      document.getElementById('status').innerHTML = 'أدخل كلمة البحث أو رابط الموقع للبدء في الاستكشاف...';
+      closeViewer();
+    }
+
+    async function performSearch() {
+      closeViewer();
       const query = document.getElementById('searchInput').value.trim();
+      const mediaType = document.getElementById('mediaType').value;
+      const statusDiv = document.getElementById('status');
+      const resultsGrid = document.getElementById('resultsGrid');
+
       if (!query) {
-        alert('يرجى كتابة كلمة البحث أولاً.');
+        statusDiv.innerHTML = '<span class="text-amber-400">يرجى إدخال نص للبحث عنه.</span>';
         return;
       }
 
-      // توجيه مباشر ومضمون لصفحة البحث في أرشيف الإنترنت الرسمي
-      const archiveUrl = `https://archive.org/search?query=${encodeURIComponent(query)}`;
-      window.location.href = archiveUrl;
+      resultsGrid.innerHTML = '';
+      statusDiv.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-indigo-500 border-t-transparent"></div><p class="mt-2 text-xs text-slate-400">جاري الاتصال بقواعد البيانات...</p>';
+
+      if (mediaType === 'web' || (query.includes('.') && !query.includes(' '))) {
+        await searchWayback(query);
+      } else {
+        await searchGeneralArchive(query, mediaType);
+      }
     }
 
-    document.getElementById('searchInput').addEventListener('keypress', (e) => { 
-      if (e.key === 'Enter') performArchiveSearch(); 
-    });
+    async function searchWayback(url) {
+      const statusDiv = document.getElementById('status');
+      const resultsGrid = document.getElementById('resultsGrid');
+      const cleanUrl = url.replace(/^(https?:\/\/)?(www\.)?/, '');
+
+      try {
+        const apiUrl = `https://archive.org/wayback/available?url=${encodeURIComponent(cleanUrl)}`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) throw new Error(`Wayback HTTP error! status: ${response.status}`);
+        const data = await response.json();
+
+        if (data.archived_snapshots && data.archived_snapshots.closest) {
+          const snapshot = data.archived_snapshots.closest;
+          const formattedDate = snapshot.timestamp.replace(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 الساعة $4:$5');
+          const safeSnapshotUrl = snapshot.url.replace('http://', 'https://');
+
+          statusDiv.innerHTML = `تم العثور على أحدث نسخة محفوظة للموقع:`;
+
+          resultsGrid.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-indigo-500/50 transition">
+              <div>
+                <span class="inline-block bg-indigo-500/10 text-indigo-400 text-xs px-2.5 py-1 rounded-full mb-3">موقع ويب</span>
+                <h3 class="font-bold text-lg text-slate-100 break-all mb-2">${cleanUrl}</h3>
+                <p class="text-xs text-slate-400 mb-4">آخر أرشفة: ${formattedDate}</p>
+              </div>
+              <button onclick="openViewer('${safeSnapshotUrl}', '${cleanUrl}')" 
+                      class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                معاينة داخل الموقع 👁️
+              </button>
+            </div>
+          `;
+        } else {
+          statusDiv.innerHTML = 'لم يتم العثور على أرشفة لهذا الرابط، جاري البحث في المكتبة العامة...';
+          await searchGeneralArchive(url, 'all');
+        }
+      } catch (err) {
+        statusDiv.innerHTML = '<span class="text-rose-400">تعذر الاتصال بالسيرفر.</span>';
+      }
+    }
+
+    async function searchGeneralArchive(query, mediaType) {
+      const statusDiv = document.getElementById('status');
+      const resultsGrid = document.getElementById('resultsGrid');
+
+      let mediaQuery = (mediaType !== 'all' && mediaType !== 'web') ? ` AND mediatype:${mediaType}` : '';
+      const targetUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(query)}${mediaQuery}&fl[]=identifier,title,description,mediatype&sort[]=downloads+desc&rows=21&page=1&output=json`;
+      
+      const apiUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Proxy API HTTP error! status: ${response.status}`);
+
+        const wrappedData = await response.json();
+        if (!wrappedData.contents) throw new Error('Empty contents returned from proxy');
+        
+        const data = JSON.parse(wrappedData.contents);
+        const docs = data.response ? data.response.docs : [];
+
+        if (!docs || docs.length === 0) {
+          statusDiv.innerHTML = 'لم يتم العثور على نتائج مطابقة.';
+          return;
+        }
+
+        statusDiv.innerHTML = `عرض ${docs.length} نتيجة:`;
+
+        docs.forEach(item => {
+          const title = item.title || item.identifier;
+          const desc = item.description ? (Array.isArray(item.description) ? item.description[0] : item.description) : 'لا يوجد وصف متاح.';
+          const cleanDesc = desc.replace(/<[^>]*>?/gm, '').slice(0, 90) + '...';
+          const type = translateType(item.mediatype);
+          
+          const embedUrl = `https://archive.org/embed/${item.identifier}`;
+          const thumbnailUrl = `https://archive.org/services/img/${item.identifier}`;
+
+          const card = document.createElement('div');
+          card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-slate-700 transition";
+          
+          card.innerHTML = `
+            <div>
+              <div class="h-40 bg-slate-950 relative overflow-hidden flex items-center justify-center border-b border-slate-800">
+                <img src="${thumbnailUrl}" alt="${title}" class="object-cover w-full h-full opacity-80" onerror="this.src='https://via.placeholder.com/300x150/0f172a/64748b?text=Archead'">
+                <span class="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-indigo-400 text-xs px-2.5 py-1 rounded-md border border-slate-700">${type}</span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-bold text-slate-200 line-clamp-1 mb-2 text-sm" title="${title}">${title}</h3>
+                <p class="text-xs text-slate-400 line-clamp-2">${cleanDesc}</p>
+              </div>
+            </div>
+            <div class="p-4 pt-0">
+              <button onclick="openViewer('${embedUrl}', '${title.replace(/'/g, "\\'")}')" 
+                      class="w-full bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white font-bold py-2 rounded-xl text-xs transition">
+                معاينة / تشغيل 👁️
+              </button>
+            </div>
+          `;
+          resultsGrid.appendChild(card);
+        });
+
+      } catch (err) {
+        statusDiv.innerHTML = '<span class="text-rose-400">حدث خطأ أثناء جلب النتائج من الأرشيف.</span>';
+      }
+    }
+
+    function openViewer(url, title) {
+      const container = document.getElementById('viewerContainer');
+      const frame = document.getElementById('contentFrame');
+      const titleElem = document.getElementById('viewerTitle');
+      const externalLink = document.getElementById('externalLink');
+
+      titleElem.innerText = title;
+      externalLink.href = url;
+      frame.src = url;
+      
+      container.classList.remove('hidden');
+    }
+
+    function closeViewer() {
+      const container = document.getElementById('viewerContainer');
+      const frame = document.getElementById('contentFrame');
+      container.classList.add('hidden');
+      frame.src = '';
+    }
+
+    function translateType(type) {
+      const types = { 
+        'texts': '📚 كتاب', 
+        'movies': '🎬 فيديو', 
+        'audio': '🎧 صوت', 
+        'software': '💻 برنامج', 
+        'image': '🖼️ صورة',
+        'web': '🌐 موقع' 
+      };
+      return types[type] || '📁 ملف';
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
   </script>
 
 </body>
-</html>
+  </html>
+  
